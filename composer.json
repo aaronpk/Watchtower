@@ -1,16 +1,22 @@
 {
     "require": {
-        "slim/slim": "^3.9",
         "j4mie/idiorm": "^1.5",
         "pda/pheanstalk": "^3.1",
         "p3k/caterpillar": "^0.1.2",
-        "p3k/utils": "^1.0"
+        "p3k/utils": "^1.0",
+        "league/plates": "^3.3",
+        "league/route": "^3.0",
+        "zendframework/zend-diactoros": "^1.6"
     },
     "autoload": {
-      "files": [
-        "lib/config.php",
-        "lib/helpers.php",
-        "lib/db_helpers.php"
-      ]
+        "psr-4": {
+          "Controllers\\": "controllers/",
+          "Jobs\\": "jobs/"
+        },
+        "files": [
+            "lib/config.php",
+            "lib/helpers.php",
+            "lib/db_helpers.php"
+        ]
     }
 }
