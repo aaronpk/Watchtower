@@ -6,6 +6,26 @@ class CheckFeed {
 
   private static $http;
 
+  private static $tiers = [
+    1,5,15,30,60,120,240,480,1440,10080,20160
+  ];
+
+  private static function nextTier($tier) {
+    $index = array_search((int)$tier, self::$tiers);
+    if(array_key_exists($index+1, self::$tiers))
+      return self::$tiers[$index+1];
+    else
+      return false;
+  }
+
+  private static function previousTier($tier) {
+    $index = array_search((int)$tier, self::$tiers);
+    if(array_key_exists($index-1, self::$tiers))
+      return self::$tiers[$index-1];
+    else
+      return false;
+  }
+
   public static function poll($feed_id, $subscriber_id=false) {
     echo "Checking feed $feed_id\n";
 
@@ -30,6 +50,8 @@ class CheckFeed {
         $content_type = $data['headers']['Content-Type'][0];
     }
 
+    $last_checks_since_last_change = $feed->checks_since_last_change;
+
     if($content_hash != $feed->content_hash) {
       // Store the new hash
       // Store the new content type
@@ -53,7 +75,18 @@ class CheckFeed {
       }
     }
 
-    // TODO: increase or decrease the tier
+    // If a feed changed after only 1 check, bump up a tier
+    if($last_checks_since_last_change == 0 && $feed->checks_since_last_change == 0) {
+      $feed->tier = self::previousTier($feed->tier) ?: $feed->tier;
+      echo "Changed immediately, bumping up to to $feed->tier\n";
+    }
+    // If 4 checks happened with no changes, drop down one tier
+    if($feed->checks_since_last_change >= 4) {
+      $feed->tier = self::nextTier($feed->tier) ?: $feed->tier;
+      $feed->checks_since_last_change = 0;
+      echo "No changes in 4 intervals, dropping down to $feed->tier\n";
+    }
+
 
     $feed->last_checked_at = date('Y-m-d H:i:s');
 
