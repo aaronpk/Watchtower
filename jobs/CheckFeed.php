@@ -98,8 +98,10 @@ class CheckFeed {
 
   private static function deliver_to_subscriber($body, $content_type, $subscriber) {
     echo "Delivering to $subscriber->callback_url\n";
+    $user = db\get_by_id('users', $subscriber->user_id);
     $response = self::$http->post($subscriber->callback_url, $body, [
-      'Content-Type: ' . $content_type
+      'Content-Type: ' . $content_type,
+      'Authorization: Bearer ' . $user->token
     ]);
     $subscriber->last_http_status = $response['code'];
     if(floor($response['code'] / 200) != 2) {

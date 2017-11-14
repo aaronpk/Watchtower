@@ -21,5 +21,5 @@ function view($template, $data=[]) {
 
 function json_response($response, $data, $code=200) {
   $response->getBody()->write(json_encode($data));
-  return $response->withStatus($code);
+  return $response->withHeader('Content-Type', 'application/json')->withStatus($code);
 }

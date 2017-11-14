@@ -44,7 +44,7 @@ class API {
           'feed_id' => $feed->id,
           'callback_url' => $body['hub_callback']
         ], [], true);
-        $response_data = ['result'=>'ok'];
+        $response_data = ['result'=>'subscribed'];
 
         // Queue a poll of this feed now, and force delivery to this subscriber
         q()->queue('\\Jobs\\CheckFeed', 'poll', [$feed->id, $subscriber->id]);
@@ -53,7 +53,7 @@ class API {
       case 'unsubscribe':
 
         $feed = db\find('feeds', ['url'=>$body['hub_topic']]);
-        $response_data = ['result'=>'not_found'];
+        $response_data = ['result'=>'subscription_not_found'];
         if($feed) {
           $subscriber = db\find('subscribers', [
             'user_id' => $user->id, 
