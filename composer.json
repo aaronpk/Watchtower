@@ -6,7 +6,8 @@
         "p3k/utils": "^1.0",
         "league/plates": "^3.3",
         "league/route": "^3.0",
-        "zendframework/zend-diactoros": "^1.6"
+        "zendframework/zend-diactoros": "^1.6",
+        "p3k/http": "^0.1.5"
     },
     "autoload": {
         "psr-4": {

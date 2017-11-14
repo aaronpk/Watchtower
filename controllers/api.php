@@ -38,8 +38,8 @@ class API {
     switch($body['hub_mode']) {
       case 'subscribe':
 
-        $feed = db\find_or_create('feeds', ['url'=>$body['hub_topic']], [], true);
-        $subscription = db\find_or_create('subscribers', [
+        $feed = db\find_or_create('feeds', ['url'=>$body['hub_topic']], ['tier'=>30], true);
+        $subscriber = db\find_or_create('subscribers', [
           'user_id' => $user->id, 
           'feed_id' => $feed->id,
           'callback_url' => $body['hub_callback']
@@ -47,7 +47,7 @@ class API {
         $response_data = ['result'=>'ok'];
 
         // Queue a poll of this feed now, and force delivery to this subscriber
-        q()->queue('Jobs\\CheckFeed', 'poll', [$feed->id, $subscription->id]);
+        q()->queue('\\Jobs\\CheckFeed', 'poll', [$feed->id, $subscriber->id]);
 
         break;
       case 'unsubscribe':
@@ -55,13 +55,13 @@ class API {
         $feed = db\find('feeds', ['url'=>$body['hub_topic']]);
         $response_data = ['result'=>'not_found'];
         if($feed) {
-          $subscription = db\find('subscribers', [
+          $subscriber = db\find('subscribers', [
             'user_id' => $user->id, 
             'feed_id' => $feed->id,
             'callback_url' => $body['hub_callback']
           ]);
-          if($subscription) {
-            $subscription->delete();
+          if($subscriber) {
+            $subscriber->delete();
             $response_data = ['result'=>'unsubscribed'];
           }
         }
