@@ -26,6 +26,16 @@ class CheckFeed {
       return false;
   }
 
+  private static function parseHttpHeader($headers, $key) {
+    if(isset($headers[$key])) {
+      if(is_string($headers[$key]))
+        return $headers[$key];
+      elseif(is_array($headers[$key]) && isset($headers[$key][0]))
+        return $headers[$key][0];
+    }
+    return null;
+  }
+
   public static function poll($feed_id, $subscriber_id=false) {
     echo "Checking feed $feed_id\n";
 
@@ -37,20 +47,22 @@ class CheckFeed {
 
     // Download the contents of the feed
     self::$http = new \p3k\http('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36 p3k-http/0.1.5 p3k-watchtower/0.1');
-    $data = self::$http->get($feed->url);
+    $headers = [];
+    if($feed->http_etag) {
+      $headers['If-None-Match'] = $feed->http_etag;
+    }
+    $data = self::$http->get($feed->url, $headers);
 
     // Check if the new hash is different from the old hash
     $content_hash = md5($data['body']);
 
-    $content_type = 'unknown';
-    if(isset($data['headers']['Content-Type'])) {
-      if(is_string($data['headers']['Content-Type']))
-        $content_type = $data['headers']['Content-Type'];
-      elseif(is_array($data['headers']['Content-Type']))
-        $content_type = $data['headers']['Content-Type'][0];
-    }
+    $content_type = self::parseHttpHeader($data['headers'], 'Content-Type') ?: 'unknown';
 
     $last_checks_since_last_change = $feed->checks_since_last_change;
+
+    $feed->http_last_modified = self::parseHttpHeader($data['headers'], 'Last-Modified') ?: '';
+    $feed->http_etag = self::parseHttpHeader($data['headers'], 'Etag') ?: '';
+    $feed->content_length = self::parseHttpHeader($data['headers'], 'Content-Length');
 
     if($content_hash != $feed->content_hash) {
       // Store the new hash
