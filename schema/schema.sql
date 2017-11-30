@@ -1,6 +1,6 @@
 CREATE TABLE `users` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `url` varchar(255) DEFAULT NULL,
+  `url` varchar(2048) DEFAULT NULL,
   `token` varchar(255) DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -8,7 +8,7 @@ CREATE TABLE `users` (
 
 CREATE TABLE `feeds` (
   `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT,
-  `url` varchar(512) DEFAULT NULL,
+  `url` varchar(2048) DEFAULT NULL,
   `content_hash` varchar(255) DEFAULT NULL,
   `content_type` varchar(255) DEFAULT NULL,
   `content_length` int(11) DEFAULT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE `subscribers` (
   `user_id` bigint(20) DEFAULT NULL,
   `feed_id` bigint(20) DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
-  `callback_url` varchar(512) DEFAULT NULL,
+  `callback_url` varchar(2048) DEFAULT NULL,
   `last_http_status` int(11) DEFAULT NULL,
   `error_count` int(11) NOT NULL DEFAULT '0',
   `last_notified_at` datetime DEFAULT NULL,
