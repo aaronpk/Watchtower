@@ -37,53 +37,60 @@ class CheckFeed {
   }
 
   public static function poll($feed_id, $subscriber_id=false) {
-    echo "Checking feed $feed_id\n";
-
     $feed = db\get_by_id('feeds', $feed_id);
     if(!$feed) {
       echo "Feed not found\n";
       return;
     }
 
+    echo "Checking feed $feed_id $feed->url\n";
+
     // Download the contents of the feed
     self::$http = new \p3k\HTTP('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36 p3k-http/0.1.5 p3k-watchtower/0.1');
+    self::$http->set_timeout(30);
     $headers = [];
     if($feed->http_etag) {
       $headers['If-None-Match'] = $feed->http_etag;
     }
     $data = self::$http->get($feed->url, $headers);
 
-    // Check if the new hash is different from the old hash
-    $content_hash = md5($data['body']);
-
-    $content_type = self::parseHttpHeader($data['headers'], 'Content-Type') ?: 'unknown';
-
     $last_checks_since_last_change = $feed->checks_since_last_change;
 
-    $feed->http_last_modified = self::parseHttpHeader($data['headers'], 'Last-Modified') ?: '';
-    $feed->http_etag = self::parseHttpHeader($data['headers'], 'Etag') ?: '';
-    $feed->content_length = self::parseHttpHeader($data['headers'], 'Content-Length');
-
-    if($content_hash != $feed->content_hash) {
-      // Store the new hash
-      // Store the new content type
-      $feed->content_hash = $content_hash;
-      $feed->content_type = $content_type;
-      $feed->checks_since_last_change = 0;
-      $feed->updated_at = date('Y-m-d H:i:s');
-
-      // Deliver the content to each subscriber
-      $subscribers = ORM::for_table('subscribers')->where('feed_id', $feed->id)->find_many();
-      foreach($subscribers as $subscriber) {
-        self::deliver_to_subscriber($data['body'], $content_type, $subscriber);
-      }
-    } else {
-      echo "No change\n";
+    if($data['body'] == '' || $data['error']) {
+      echo "Error fetching $feed->url\n";
       $feed->checks_since_last_change++;
-      // Even if there was no change, deliver to the new subscriber right away
-      if($subscriber_id) {
-        $subscriber = db\get_by_id('subscribers', $subscriber_id);
-        self::deliver_to_subscriber($data['body'], $content_type, $subscriber);
+    } else {
+
+      // Check if the new hash is different from the old hash
+      $content_hash = md5($data['body']);
+
+      $content_type = self::parseHttpHeader($data['headers'], 'Content-Type') ?: 'unknown';
+
+      $feed->http_last_modified = self::parseHttpHeader($data['headers'], 'Last-Modified') ?: '';
+      $feed->http_etag = self::parseHttpHeader($data['headers'], 'Etag') ?: '';
+      $feed->content_length = self::parseHttpHeader($data['headers'], 'Content-Length');
+
+      if($feed->url == 'http://tantek.com/' || $content_hash != $feed->content_hash) {
+        // Store the new hash
+        // Store the new content type
+        $feed->content_hash = $content_hash;
+        $feed->content_type = $content_type;
+        $feed->checks_since_last_change = 0;
+        $feed->updated_at = date('Y-m-d H:i:s');
+
+        // Deliver the content to each subscriber
+        $subscribers = ORM::for_table('subscribers')->where('feed_id', $feed->id)->find_many();
+        foreach($subscribers as $subscriber) {
+          self::deliver_to_subscriber($data['body'], $content_type, $subscriber);
+        }
+      } else {
+        echo "No change\n";
+        $feed->checks_since_last_change++;
+        // Even if there was no change, deliver to the new subscriber right away
+        if($subscriber_id) {
+          $subscriber = db\get_by_id('subscribers', $subscriber_id);
+          self::deliver_to_subscriber($data['body'], $content_type, $subscriber);
+        }
       }
     }
 
@@ -98,7 +105,6 @@ class CheckFeed {
       $feed->checks_since_last_change = 0;
       echo "No changes in 4 intervals, dropping down to $feed->tier\n";
     }
-
 
     $feed->last_checked_at = date('Y-m-d H:i:s');
 
