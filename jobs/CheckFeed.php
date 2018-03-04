@@ -7,7 +7,7 @@ class CheckFeed {
   private static $http;
 
   private static $tiers = [
-    1,5,15,30,60,120,240,480,1440,10080,20160
+    1,5,15,30,60,120,240,480,1440,2880
   ];
 
   private static function nextTier($tier) {
@@ -70,7 +70,7 @@ class CheckFeed {
       $feed->http_etag = self::parseHttpHeader($data['headers'], 'Etag') ?: '';
       $feed->content_length = self::parseHttpHeader($data['headers'], 'Content-Length');
 
-      if($feed->url == 'http://tantek.com/' || $content_hash != $feed->content_hash) {
+      if($content_hash != $feed->content_hash) {
         // Store the new hash
         // Store the new content type
         $feed->content_hash = $content_hash;
