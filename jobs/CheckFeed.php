@@ -115,18 +115,20 @@ class CheckFeed {
   }
 
   private static function deliver_to_subscriber($body, $content_type, $subscriber) {
-    echo "Delivering to $subscriber->callback_url\n";
-    $user = db\get_by_id('users', $subscriber->user_id);
-    $response = self::$http->post($subscriber->callback_url, $body, [
-      'Content-Type: ' . $content_type,
-      'Authorization: Bearer ' . $user->token
-    ]);
-    $subscriber->last_http_status = $response['code'];
-    if(floor($response['code'] / 200) != 2) {
-      $subscriber->error_count++;
+    if($subscriber && $subscriber->callback_url) {
+      echo "Delivering to $subscriber->callback_url\n";
+      $user = db\get_by_id('users', $subscriber->user_id);
+      $response = self::$http->post($subscriber->callback_url, $body, [
+        'Content-Type: ' . $content_type,
+        'Authorization: Bearer ' . $user->token
+      ]);
+      $subscriber->last_http_status = $response['code'];
+      if(floor($response['code'] / 200) != 2) {
+        $subscriber->error_count++;
+      }
+      $subscriber->last_notified_at = date('Y-m-d H:i:s');
+      $subscriber->save();
     }
-    $subscriber->last_notified_at = date('Y-m-d H:i:s');
-    $subscriber->save();
   }
 
 }
