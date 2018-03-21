@@ -7,7 +7,7 @@ class CheckFeed {
   private static $http;
 
   private static $tiers = [
-    1,5,15,30,60,120,240,480,1440,2880
+    1,5,15,30,60,120,240,360,480,720,960,1440,2880
   ];
 
   private static function nextTier($tier) {
