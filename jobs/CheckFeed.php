@@ -43,6 +43,12 @@ class CheckFeed {
       return;
     }
 
+    // Check that this feed wasn't already recently checked
+    if($feed->last_checked_at && (time()-strtotime($feed->last_checked_at)) < 60) {
+      echo "Feed $feed_id was checked within the last minute, skipping\n";
+      return;
+    }
+
     echo "Checking feed $feed_id $feed->url\n";
 
     // Download the contents of the feed
@@ -136,18 +142,24 @@ class CheckFeed {
 
   private static function deliver_to_subscriber($body, $content_type, $subscriber) {
     if($subscriber && $subscriber->callback_url) {
-      echo "Delivering to $subscriber->callback_url\n";
-      $user = db\get_by_id('users', $subscriber->user_id);
-      $response = self::$http->post($subscriber->callback_url, $body, [
-        'Content-Type: ' . $content_type,
-        'Authorization: Bearer ' . $user->token
-      ]);
-      $subscriber->last_http_status = $response['code'];
-      if(floor($response['code'] / 200) != 2) {
-        $subscriber->error_count++;
+
+      $last_delivered = strtotime($subscriber->last_notified_at);
+      if(!$subscriber->last_notified_at || (time()-$last_delivered) > 30) {
+        echo "Delivering to $subscriber->callback_url\n";
+        $user = db\get_by_id('users', $subscriber->user_id);
+        $response = self::$http->post($subscriber->callback_url, $body, [
+          'Content-Type: ' . $content_type,
+          'Authorization: Bearer ' . $user->token
+        ]);
+        $subscriber->last_http_status = $response['code'];
+        if(floor($response['code'] / 200) != 2) {
+          $subscriber->error_count++;
+        }
+        $subscriber->last_notified_at = date('Y-m-d H:i:s');
+        $subscriber->save();
+      } else {
+        echo "Already delivered to $subscriber->callback_url in the last 30 seconds\n";
       }
-      $subscriber->last_notified_at = date('Y-m-d H:i:s');
-      $subscriber->save();
     }
   }
 
