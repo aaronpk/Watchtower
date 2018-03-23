@@ -49,7 +49,7 @@ class CheckFeed {
       return;
     }
 
-    echo "Checking feed $feed_id $feed->url\n";
+    echo "Checking feed $feed_id $feed->url '$feed->content_type'\n";
 
     // Download the contents of the feed
     self::$http = new \p3k\HTTP('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36 p3k-http/0.1.5 p3k-watchtower/0.1');
@@ -74,6 +74,8 @@ class CheckFeed {
       $feed->content_length = self::parseHttpHeader($data['headers'], 'Content-Length');
       $feed->content_type = $content_type;
 
+      $content_hash = md5($data['body']);
+
       // Check if the new content is different from the old content
       $previous_content_file = 'data/'.$feed_id.'.txt';
       if(!file_exists($previous_content_file))
@@ -82,20 +84,17 @@ class CheckFeed {
         $previous_content = file_get_contents($previous_content_file);
 
       if(stripos($content_type, 'html')) {
-        $previous_content = strip_tags($previous_content);
-        $current_content = strip_tags($data['body']);
+        $previous_content = self::strip_html($previous_content);
+        $current_content = self::strip_html($data['body']);
+        $changed = $previous_content != $current_content;
       } else {
-        $current_content = $data['body'];
+        $changed = $content_hash != $feed->content_hash;
       }
 
-      // Calculate the similarity of the previous and current content
-      $p = false;
-      similar_text($previous_content, $current_content, $p);
-
       // If the new content different enough, deliver to the subscribers
-      if($p < 98) {
-        // Store the new content type
-        #$feed->content_hash = $content_hash;
+      if($changed) {
+        // Store the new content hash
+        $feed->content_hash = $content_hash;
         $feed->checks_since_last_change = 0;
         $feed->updated_at = date('Y-m-d H:i:s');
         $feed->save();
@@ -138,6 +137,10 @@ class CheckFeed {
     $feed->next_check_at = date('Y-m-d H:i:s', time()+($feed->tier*60));
     $feed->save();
 
+  }
+
+  private static function strip_html($html) {
+    return preg_replace('/\s+/',' ',strtolower(strip_tags($html)));
   }
 
   private static function deliver_to_subscriber($body, $content_type, $subscriber) {
