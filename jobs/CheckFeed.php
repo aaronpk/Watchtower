@@ -119,16 +119,18 @@ class CheckFeed {
       file_put_contents($previous_content_file, $data['body']);
     }
 
-    // If a feed changed after only 1 check, bump up a tier
+    // If a feed changed after only 1 check, bump up two tiers
     if($last_checks_since_last_change == 0 && $feed->checks_since_last_change == 0) {
+      $feed->tier = self::previousTier($feed->tier) ?: $feed->tier;
       $feed->tier = self::previousTier($feed->tier) ?: $feed->tier;
       echo "Changed immediately, bumping up to to $feed->tier\n";
     }
-    // If 4 checks happened with no changes, drop down one tier
-    if($feed->checks_since_last_change >= 4) {
+    // If N checks happened with no changes, drop down one tier
+    $n = 10;
+    if($feed->checks_since_last_change >= $n) {
       $feed->tier = self::nextTier($feed->tier) ?: $feed->tier;
       $feed->checks_since_last_change = 0;
-      echo "No changes in 4 intervals, dropping down to $feed->tier\n";
+      echo "No changes in $n intervals, dropping down to $feed->tier\n";
     }
 
     $feed->last_checked_at = date('Y-m-d H:i:s');
