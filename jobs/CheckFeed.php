@@ -44,7 +44,7 @@ class CheckFeed {
     }
 
     // Check that this feed wasn't already recently checked
-    if($feed->last_checked_at && (time()-strtotime($feed->last_checked_at)) < 60) {
+    if($feed->last_checked_at && (time()-strtotime($feed->last_checked_at)) < 15) {
       echo "Feed $feed_id was checked within the last minute, skipping\n";
       return;
     }
@@ -61,6 +61,8 @@ class CheckFeed {
     $data = self::$http->get($feed->url, $headers);
 
     $last_checks_since_last_change = $feed->checks_since_last_change;
+
+    $changed = false;
 
     if($data['body'] == '' || $data['error']) {
       echo "Error fetching $feed->url\n";
@@ -91,10 +93,11 @@ class CheckFeed {
         $changed = $content_hash != $feed->content_hash;
       }
 
+      $feed->content_hash = $content_hash;
+
       // If the new content different enough, deliver to the subscribers
       if($changed) {
         // Store the new content hash
-        $feed->content_hash = $content_hash;
         $feed->checks_since_last_change = 0;
         $feed->updated_at = date('Y-m-d H:i:s');
         $feed->save();
@@ -120,14 +123,14 @@ class CheckFeed {
     }
 
     // If a feed changed after only 1 check, bump up two tiers
-    if($last_checks_since_last_change == 0 && $feed->checks_since_last_change == 0) {
+    if($changed && $last_checks_since_last_change == 0 && $feed->checks_since_last_change == 0) {
       $feed->tier = self::previousTier($feed->tier) ?: $feed->tier;
       $feed->tier = self::previousTier($feed->tier) ?: $feed->tier;
       echo "Changed immediately, bumping up to to $feed->tier\n";
     }
     // If N checks happened with no changes, drop down one tier
     $n = 10;
-    if($feed->checks_since_last_change >= $n) {
+    if($changed == false && $feed->checks_since_last_change >= $n) {
       $feed->tier = self::nextTier($feed->tier) ?: $feed->tier;
       $feed->checks_since_last_change = 0;
       echo "No changes in $n intervals, dropping down to $feed->tier\n";
@@ -142,7 +145,7 @@ class CheckFeed {
   }
 
   private static function strip_html($html) {
-    return preg_replace('/\s+/',' ',strtolower(strip_tags($html)));
+    return preg_replace('/\s+/',"\n",strtolower(strip_tags($html)));
   }
 
   private static function deliver_to_subscriber($body, $content_type, $subscriber) {
