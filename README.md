@@ -3,10 +3,13 @@ Watchtower
 
 Watchtower is a minimal API that watches web pages for changes and notifies subscribers. Its API is similar to [WebSub](https://www.w3.org/TR/websub/), as well as [Superfeedr subscriptions](https://documentation.superfeedr.com/subscribers.html).
 
+For HTML pages, Watchtower compares the text content with all tags removed in order to determine whether a page has changed. This prevents things like CSRF tokens from triggering a change event and redelivery of the page. For all other content types, the raw content is used to compare changes. If a page has changed more than 2% then it will be delivered to subscribers.
+
+
 API
 ---
 
-Every API request requires authenticating with an application API key included as a Bearer Token. 
+Every API request requires authenticating with an application API key included as a Bearer Token.
 
 ```
 POST / HTTP/1.1

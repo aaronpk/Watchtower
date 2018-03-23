@@ -61,22 +61,38 @@ class CheckFeed {
       $feed->checks_since_last_change++;
     } else {
 
-      // Check if the new hash is different from the old hash
-      $content_hash = md5($data['body']);
-
       $content_type = self::parseHttpHeader($data['headers'], 'Content-Type') ?: 'unknown';
 
       $feed->http_last_modified = self::parseHttpHeader($data['headers'], 'Last-Modified') ?: '';
       $feed->http_etag = self::parseHttpHeader($data['headers'], 'Etag') ?: '';
       $feed->content_length = self::parseHttpHeader($data['headers'], 'Content-Length');
+      $feed->content_type = $content_type;
 
-      if($content_hash != $feed->content_hash) {
-        // Store the new hash
+      // Check if the new content is different from the old content
+      $previous_content_file = 'data/'.$feed_id.'.txt';
+      if(!file_exists($previous_content_file))
+        $previous_content = '';
+      else
+        $previous_content = file_get_contents($previous_content_file);
+
+      if(stripos($content_type, 'html')) {
+        $previous_content = strip_tags($previous_content);
+        $current_content = strip_tags($data['body']);
+      } else {
+        $current_content = $data['body'];
+      }
+
+      // Calculate the similarity of the previous and current content
+      $p = false;
+      similar_text($previous_content, $current_content, $p);
+
+      // If the new content different enough, deliver to the subscribers
+      if($p < 98) {
         // Store the new content type
-        $feed->content_hash = $content_hash;
-        $feed->content_type = $content_type;
+        #$feed->content_hash = $content_hash;
         $feed->checks_since_last_change = 0;
         $feed->updated_at = date('Y-m-d H:i:s');
+        $feed->save();
 
         // Deliver the content to each subscriber
         $subscribers = ORM::for_table('subscribers')->where('feed_id', $feed->id)->find_many();
@@ -86,12 +102,16 @@ class CheckFeed {
       } else {
         echo "No change\n";
         $feed->checks_since_last_change++;
+        $feed->save();
+
         // Even if there was no change, deliver to the new subscriber right away
         if($subscriber_id) {
           $subscriber = db\get_by_id('subscribers', $subscriber_id);
           self::deliver_to_subscriber($data['body'], $content_type, $subscriber);
         }
       }
+
+      file_put_contents($previous_content_file, $data['body']);
     }
 
     // If a feed changed after only 1 check, bump up a tier
