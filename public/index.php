@@ -22,5 +22,7 @@ $route = new League\Route\RouteCollection();
 $route->map('GET', '/', 'Controllers\\Main::index');
 $route->map('POST', '/', 'Controllers\\API::index');
 
+$route->map('GET', '/stats/tiers', 'Controllers\\Stats::tiers');
+
 $response = $route->dispatch($container->get('request'), $container->get('response'));
 $container->get('emitter')->emit($response);
