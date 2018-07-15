@@ -9,6 +9,7 @@ CREATE TABLE `users` (
 CREATE TABLE `feeds` (
   `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT,
   `url` varchar(2048) DEFAULT NULL,
+  `domain` varchar(255) DEFAULT NULL,
   `content_hash` varchar(255) DEFAULT NULL,
   `content_type` varchar(255) DEFAULT NULL,
   `content_length` int(11) DEFAULT NULL,
@@ -20,7 +21,9 @@ CREATE TABLE `feeds` (
   `next_check_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `domain` (`domain`),
+  KEY `tier` (`tier`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `subscribers` (

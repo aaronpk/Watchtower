@@ -23,6 +23,7 @@ $route->map('GET', '/', 'Controllers\\Main::index');
 $route->map('POST', '/', 'Controllers\\API::index');
 
 $route->map('GET', '/stats/tiers', 'Controllers\\Stats::tiers');
+$route->map('GET', '/stats/feeds', 'Controllers\\Stats::feeds');
 
 $response = $route->dispatch($container->get('request'), $container->get('response'));
 $container->get('emitter')->emit($response);

@@ -38,9 +38,14 @@ class API {
     switch($body['hub_mode']) {
       case 'subscribe':
 
-        $feed = db\find_or_create('feeds', ['url'=>$body['hub_topic']], ['tier'=>30], true);
+        $feed = db\find_or_create('feeds', [
+          'url'=>$body['hub_topic']
+        ], [
+          'tier'=>30,
+          'domain'=>parse_url($body['hub_topic'], PHP_URL_HOST)
+        ], true);
         $subscriber = db\find_or_create('subscribers', [
-          'user_id' => $user->id, 
+          'user_id' => $user->id,
           'feed_id' => $feed->id,
           'callback_url' => $body['hub_callback']
         ], [], true);
@@ -56,7 +61,7 @@ class API {
         $response_data = ['result'=>'subscription_not_found'];
         if($feed) {
           $subscriber = db\find('subscribers', [
-            'user_id' => $user->id, 
+            'user_id' => $user->id,
             'feed_id' => $feed->id,
             'callback_url' => $body['hub_callback']
           ]);

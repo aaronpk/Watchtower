@@ -43,6 +43,32 @@ graph_scale yes
     return text_response($response, $text."\n");
   }
 
+  public function feeds(ServerRequestInterface $request, ResponseInterface $response) {
+    $params = $request->getQueryParams();
+
+    if(isset($params['config'])) {
+      $text = 'graph_title Watchtower Feeds
+graph_info Number of feeds and unique domains
+graph_vlabel Number
+graph_category watchtower
+graph_args --lower-limit 0
+graph_scale yes
+
+feeds.label Feeds
+feeds.type GAUGE
+feeds.min 0
+domains.label Domains
+domains.type GAUGE
+domains.min 0';
+    } else {
+      $feeds = ORM::for_table('feeds')->raw_query('SELECT COUNT(1) AS num FROM feeds')->find_one()->num;
+      $domains = ORM::for_table('feeds')->raw_query('SELECT COUNT(DISTINCT(domain)) AS num FROM feeds')->find_one()->num;
+      $text = 'feeds.value '.$feeds.'
+domains.value '.$domains;
+    }
+    return text_response($response, $text."\n");
+  }
+
   private static function tier_label($minutes) {
     if($minutes >= 60) {
       return floor($minutes / 60).' Hour'.(floor($minutes / 60) == 1 ? '' : 's');
