@@ -51,6 +51,8 @@ class CheckFeed {
 
     echo "Checking feed $feed_id $feed->url '$feed->content_type'\n";
 
+    ORM::for_table('stats')->raw_execute('UPDATE stats SET `value` = `value` + 1 WHERE `key` = "fetches"');
+
     // Download the contents of the feed
     self::$http = new \p3k\HTTP('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36 p3k-http/0.1.5 p3k-watchtower/0.1');
     self::$http->set_timeout(30);

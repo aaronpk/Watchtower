@@ -24,6 +24,7 @@ $route->map('POST', '/', 'Controllers\\API::index');
 
 $route->map('GET', '/stats/tiers', 'Controllers\\Stats::tiers');
 $route->map('GET', '/stats/feeds', 'Controllers\\Stats::feeds');
+$route->map('GET', '/stats/polls', 'Controllers\\Stats::polls');
 
 $response = $route->dispatch($container->get('request'), $container->get('response'));
 $container->get('emitter')->emit($response);

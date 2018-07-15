@@ -69,6 +69,28 @@ domains.value '.$domains;
     return text_response($response, $text."\n");
   }
 
+  public function polls(ServerRequestInterface $request, ResponseInterface $response) {
+    $params = $request->getQueryParams();
+
+    if(isset($params['config'])) {
+      $text = 'graph_title Watchtower Polls
+graph_info Feed polls per minute
+graph_vlabel Polls per Minute
+graph_category watchtower
+graph_args --lower-limit 0
+graph_scale yes
+graph_period minute
+
+polls.label Polls per Minute
+polls.type DERIVE
+polls.min 0';
+    } else {
+      $polls = ORM::for_table('stats')->where('key', 'fetches')->find_one()->value;
+      $text = 'polls.value '.$polls;
+    }
+    return text_response($response, $text."\n");
+  }
+
   private static function tier_label($minutes) {
     if($minutes >= 60) {
       return floor($minutes / 60).' Hour'.(floor($minutes / 60) == 1 ? '' : 's');
