@@ -78,6 +78,12 @@ class CheckFeed {
       $feed->content_length = self::parseHttpHeader($data['headers'], 'Content-Length');
       $feed->content_type = $content_type;
 
+      if(isset($data['rels']['hub']) && isset($data['rels']['self'])) {
+        $feed->websub_hub = $data['rels']['hub'][0];
+        $feed->websub_topic = $data['rels']['self'][0];
+        // TODO: Queue a job to subscribe to the feed
+      }
+
       $content_hash = md5($data['body']);
 
       // Check if the new content is different from the old content
@@ -155,6 +161,7 @@ class CheckFeed {
 
       $last_delivered = strtotime($subscriber->last_notified_at);
       if(!$subscriber->last_notified_at || (time()-$last_delivered) > 30) {
+        // TODO: Move this into a separate delivery job?
         echo "Delivering to $subscriber->callback_url\n";
         $user = db\get_by_id('users', $subscriber->user_id);
         $response = self::$http->post($subscriber->callback_url, $body, [
