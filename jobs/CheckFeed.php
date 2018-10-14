@@ -153,7 +153,7 @@ class CheckFeed {
   }
 
   private static function strip_html($html) {
-    return preg_replace('/\s+/',"\n",strtolower(strip_tags($html)));
+    return preg_replace('/\s+/',"\n",strtolower(htmlentities($html)));
   }
 
   private static function deliver_to_subscriber($body, $content_type, $subscriber) {
