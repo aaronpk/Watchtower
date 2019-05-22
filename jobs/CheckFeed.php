@@ -78,11 +78,31 @@ class CheckFeed {
       $feed->content_length = self::parseHttpHeader($data['headers'], 'Content-Length');
       $feed->content_type = $content_type;
 
+      $websub_hub = false;
+      $websub_topic = false;
+
+      // HTTP lib returns rels found in the HTTP headers
       if(isset($data['rels']['hub']) && isset($data['rels']['self'])) {
-        $feed->websub_hub = $data['rels']['hub'][0];
-        $feed->websub_topic = $data['rels']['self'][0];
-        // TODO: Queue a job to subscribe to the feed
+        $websub_hub = $data['rels']['hub'][0];
+        $websub_topic = $data['rels']['self'][0];
       }
+
+      // Check the body for rels too
+      if(stripos($content_type, 'html')) {
+        $mf2 = \mf2\parse($data['body']);
+        if(isset($mf2['rels']['self'][0]) && isset($mf2['rels']['hub'][0])) {
+          $websub_hub = $mf2['rels']['hub'][0];
+          $websub_topic = $mf2['rels']['self'][0];
+
+          print_r($mf2['rels']);
+        }
+      }
+
+      // TODO: Queue a job to subscribe to the feed
+      if($websub_hub && $websub_topic) {
+
+      }
+
 
       $content_hash = md5($data['body']);
 

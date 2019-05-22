@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "2f66bc5819a50268350d92a01decfb6c",
+    "content-hash": "097b49828107f8a4b1d83ac5c23109df",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -330,16 +330,16 @@
         },
         {
             "name": "mf2/mf2",
-            "version": "v0.3.2",
+            "version": "0.4.6",
             "source": {
                 "type": "git",
-                "url": "https://github.com/indieweb/php-mf2.git",
-                "reference": "dc0d90d4ee30864bcf37cd3a8fc8db94f9134cc4"
+                "url": "https://github.com/microformats/php-mf2.git",
+                "reference": "00b70ee7eb7f5b0585b1bd467f6c9cbd75055d23"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/indieweb/php-mf2/zipball/dc0d90d4ee30864bcf37cd3a8fc8db94f9134cc4",
-                "reference": "dc0d90d4ee30864bcf37cd3a8fc8db94f9134cc4",
+                "url": "https://api.github.com/repos/microformats/php-mf2/zipball/00b70ee7eb7f5b0585b1bd467f6c9cbd75055d23",
+                "reference": "00b70ee7eb7f5b0585b1bd467f6c9cbd75055d23",
                 "shasum": ""
             },
             "require": {
@@ -351,7 +351,8 @@
                 "phpunit/phpunit": "4.8.*"
             },
             "suggest": {
-                "barnabywalters/mf-cleaner": "To more easily handle the canonical data php-mf2 gives you"
+                "barnabywalters/mf-cleaner": "To more easily handle the canonical data php-mf2 gives you",
+                "masterminds/html5": "Alternative HTML parser for PHP, for better HTML5 support."
             },
             "bin": [
                 "bin/fetch-mf2",
@@ -365,7 +366,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "CC0"
+                "CC0-1.0"
             ],
             "authors": [
                 {
@@ -381,7 +382,7 @@
                 "parser",
                 "semantic"
             ],
-            "time": "2017-05-27T15:27:47+00:00"
+            "time": "2018-08-24T14:47:04+00:00"
         },
         {
             "name": "nikic/fast-route",
@@ -465,21 +466,21 @@
         },
         {
             "name": "p3k/http",
-            "version": "0.1.5",
+            "version": "0.1.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aaronpk/p3k-http.git",
-                "reference": "3740fe135e6d58457d7528e7c05a67b68e020a79"
+                "reference": "1826647c4902a18dea5ec532f21509ba4d51210b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aaronpk/p3k-http/zipball/3740fe135e6d58457d7528e7c05a67b68e020a79",
-                "reference": "3740fe135e6d58457d7528e7c05a67b68e020a79",
+                "url": "https://api.github.com/repos/aaronpk/p3k-http/zipball/1826647c4902a18dea5ec532f21509ba4d51210b",
+                "reference": "1826647c4902a18dea5ec532f21509ba4d51210b",
                 "shasum": ""
             },
             "require": {
                 "indieweb/link-rel-parser": "0.1.*",
-                "mf2/mf2": "0.3.*"
+                "mf2/mf2": ">=0.3.2"
             },
             "type": "library",
             "autoload": {
@@ -499,7 +500,7 @@
             ],
             "description": "A simple wrapper API around the PHP curl functions",
             "homepage": "https://github.com/aaronpk/p3k-http",
-            "time": "2017-04-29T17:43:29+00:00"
+            "time": "2018-03-04T15:21:58+00:00"
         },
         {
             "name": "p3k/utils",
