@@ -43,6 +43,9 @@ class CheckFeed {
       return;
     }
 
+    $feed->pending = 0;
+    $feed->save();
+
     // Check that this feed wasn't already recently checked
     if($feed->last_checked_at && (time()-strtotime($feed->last_checked_at)) < 15) {
       echo "Feed $feed_id was checked within the last minute, skipping\n";

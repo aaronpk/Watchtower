@@ -25,6 +25,7 @@ CREATE TABLE `feeds` (
   `http_etag` varchar(255) NOT NULL DEFAULT '',
   `last_checked_at` datetime DEFAULT NULL,
   `next_check_at` datetime DEFAULT NULL,
+  `pending` tinyint(4) NOT NULL DEFAULT '0',
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
